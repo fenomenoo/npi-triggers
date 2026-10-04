@@ -1,0 +1,11 @@
+# Output is generated, and it is a list of real businesses.
+# Never commit it.
+npi_triggers.json
+tables.md
+*.csv
+
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.DS_Store
