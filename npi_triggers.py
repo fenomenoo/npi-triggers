@@ -1,21 +1,15 @@
 #!/usr/bin/env python3
 """
-npi-triggers: find US healthcare organisations that recently changed.
+Pull ABA / therapy practices from the public CMS NPPES registry and classify
+them by trigger.
 
-Pulls the public CMS NPPES registry and classifies organisations by two
-computable signals: newly enumerated entities, and established records that
-were updated recently.
+No API key. No account. No cost. The registry is public.
 
-No API key. No account. No cost. Standard library only.
-
-    python npi_triggers.py IN MI
-    python npi_triggers.py FL NC SC --new 90 --changed 60
-    python npi_triggers.py CA --taxonomy "Physical Therapist" --cap 2000
+    python pull_npi.py IN MI
+    python pull_npi.py FL NC SC --new 90 --changed 60
+    python pull_npi.py TX --taxonomy "Occupational Therapist"
 
 Writes npi_triggers.json and tables.md next to this file.
-
-NOTE: a changed record says that something changed, never what. The "changed"
-group is a filter, not a verdict. Check a row before acting on it.
 """
 
 import argparse, datetime, io, json, os, sys, time
@@ -27,7 +21,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 
 def pull(state, taxonomy, cap):
     """Page through the registry for one state. Returns raw records."""
-    out, skip = [], 0
+    out, skip, seen = [], 0, set()
     while skip < cap:
         q = urllib.parse.urlencode({
             "version": "2.1", "state": state, "taxonomy_description": taxonomy,
@@ -43,7 +37,14 @@ def pull(state, taxonomy, cap):
         results = data.get("results") or []
         if not results:
             break
-        out += results
+        # The registry repeats records once you page deep enough, so dedupe by
+        # NPI and stop when a whole page tells us nothing new.
+        fresh = [r for r in results if r.get("number") not in seen]
+        for r in fresh:
+            seen.add(r.get("number"))
+        out += fresh
+        if not fresh:
+            break
         if len(results) < 200:
             break
         skip += 200
