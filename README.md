@@ -68,13 +68,13 @@ described, because an argument about targeting is worth less than the list.
 | Organisations with a practice address in those states | **789** |
 | Newly enumerated within 180 days | **38** |
 | Established but record-updated within 120 days | **41** |
-| Out-of-state records correctly discarded in Indiana alone | **175 of 464** |
+| Out-of-state records correctly discarded in Indiana alone | **125 of 464** |
 
 Every row is a real organisation with a real NPI and a real date. Runs in about
 thirty seconds.
 
-The out-of-state number is the part that surprised me: **38% of what the API
-returns for a state is not located in that state.** See below for why.
+The out-of-state number is the part that surprised me: **27% of what the API
+returned for Indiana is not located in Indiana.** See below for why.
 
 ## Install
 
@@ -140,7 +140,7 @@ The NPPES API matches on **any** address attached to a record, including
 mailing addresses. Asking for `state=IN` returns organisations headquartered in
 New Jersey, Georgia and Texas that happen to have an Indiana mailing address.
 
-In the run above that was **175 of 464 records in Indiana — 38% noise.** The
+In the run above that was **125 of 464 records in Indiana, 27% noise.** The
 script keeps only records whose `LOCATION` address is in the state you asked
 for, because a company with a PO box in a state is not a practice in it.
 
